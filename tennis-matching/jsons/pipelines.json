@@ -1,0 +1,53 @@
+{
+    "match_requests_users_pipeline": [
+        {
+            "$lookup": {
+                "from": "user",
+                "localField": "userId",
+                "foreignField": "_id",
+                "as": "user_infos"
+            }
+        },
+        {
+            "$set": {
+                "user_infos": {"$first": "$user_infos"}
+            }
+        },
+        {
+            "$set": {
+                "user_ntrp": "$user_infos.ntrp"
+            }
+        },
+        {"$unset": ["user_infos"]}
+    ],
+    "court_timeslot_pipeline": [
+        {
+          "$lookup": {
+            "from": "timeslot",
+            "let": { "id": "$_id" },
+            "pipeline": [
+              {
+                "$match": {
+                  "$expr": {
+                    "$eq": ["$courtId", "$$id"]
+                  }
+                }
+              },
+              {
+                "$sort": { "date": 1 }
+              },
+              {
+                "$project": {
+                  "_id": 0,
+                  "courtId": 0,
+                  "ownerId": 0,
+                  "rentalCostPerHalfHour": 0,
+                  "_class": 0
+                 }
+              }
+            ],
+            "as": "timeSlotsList"
+          }
+        }
+    ]
+}
