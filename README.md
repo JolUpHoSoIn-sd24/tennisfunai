@@ -9,11 +9,11 @@
     <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=Python&logoColor=white">
 	
 <br/>    
-    <img src="https://img.shields.io/badge/Pytorch-EE4C2C?style=flat-square&logo=MongoDB&logoColor=white" />
-    <img src="https://img.shields.io/badge/TensorFlow-FF6F00?style=flat-square&logo=MongoDB&logoColor=white" />
-    <img src="https://img.shields.io/badge/OpenCV-5C3EE8?style=flat-square&logo=MongoDB&logoColor=white" />
+    <img src="https://img.shields.io/badge/Pytorch-EE4C2C?style=flat-square&logo=Pytorch&logoColor=white" />
+    <img src="https://img.shields.io/badge/TensorFlow-FF6F00?style=flat-square&logo=TensorFlow&logoColor=white" />
+    <img src="https://img.shields.io/badge/OpenCV-5C3EE8?style=flat-square&logo=OpenCV&logoColor=white" />
 <br/>
-	<img src="https://img.shields.io/badge/MongoDB-47A248?style=flat-square&logo=Docker&logoColor=white" />
+	<img src="https://img.shields.io/badge/MongoDB-47A248?style=flat-square&logo=MongoDB&logoColor=white" />
 <br/>
 	<img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=Docker&logoColor=white" />
  	<img src="https://img.shields.io/badge/Google%20Cloud Platform-4285F4?style=flat-square&logo=Google%20Cloud&logoColor=white" />
