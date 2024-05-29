@@ -73,7 +73,7 @@ AI, 프론트엔드, 백엔드 레포지토리를 아래 링크에서 확인하�
 
 |이름|역할| email              |github|
 |---|---|--------------------|---|
-|송정우|AI 개발| jws5346@ajou.ac.kr  |[https://github.com/kkj6235](https://github.com/KyleJSong)|
+|송정우|AI 개발| jws5346@ajou.ac.kr  |https://github.com/KyleJSong|
 
 
 <br/>
