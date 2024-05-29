@@ -104,7 +104,30 @@ with Docker(ToDo)
 
 ## 매칭 추천 AI
 
+### 개요
+
 ![matching_ai_example](./images/matching_ai_example.png)
+
+### 실행
+
+./tennis-matching/scripts 파일에 실행 스크립트가 있습니다.
+
+* 기존 collection reset
+	```
+	bash ./scripts/reset.sh
+	```
+
+* 기존 collection reset 후 MongoDB 내 데이터에 대해서 Vector Embedding & Qdrant Upsert
+	```
+	bash ./scripts/makeall.sh
+	```
+
+* MongoDB에 새로 insert되는 데이터 트래킹 & 실시간 추천 서버 실행
+	```
+	bash ./scripts/run.sh
+	```
+
+### 동작원리
 
 **A. 사전 Qdrant 구축**
 
@@ -138,10 +161,13 @@ with Docker(ToDo)
 ## ToDo
 
 - [ ] 무인 심판 AI - 프론트 연동
+- [ ] 무인 심판 AI - 배포용 코드 정리
 - [ ] Docker 환경 세팅 
 
 ## References
 
-[tennis-tracking]:(https://github.com/ArtLabss/tennis-tracking)
-[TennisProject]:(https://github.com/yastrebksv/TennisProject)
-[Tennis]:(https://github.com/HaydenFaulkner/Tennis)
+[tennis-tracking](https://github.com/ArtLabss/tennis-tracking)
+
+[TennisProject](https://github.com/yastrebksv/TennisProject)
+
+[Tennis](https://github.com/HaydenFaulkner/Tennis)
