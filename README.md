@@ -79,8 +79,69 @@ AI, 프론트엔드, 백엔드 레포지토리를 아래 링크에서 확인하�
 <br/>
 
 
+## Installation && Dependency
 
+- 해당 repository를 clone합니다.
+	```
+	git clone https://github.com/JolUpHoSoIn-sd24/tennisfunai.git && cd tennis_ai
+	```
 
-## ✒️ API Docs
+- 기호에 맞게 pypl로 requirements.txt를 설치하거나 conda 가상환경을 생성합니다.
 
-- [API Docs](https://www.notion.so/API-Docs-9b3bbfc16fed4fb59be1816626c89a50?pvs=4)
+without conda
+	```
+	pip install -r requirements.txt
+	```
+
+with conda
+	```
+	conda env create -f environment.yaml && conda activate tp
+	```
+
+with Docker(ToDo)
+	```
+	```
+
+## 매칭 추천 AI
+
+![matching_ai_example](./images/matching_ai_example.png)
+
+**A. 사전 Qdrant 구축**
+
+1. MongoDB 내 'MatchResult' 콜렉션 삭제 후 재생성
+2. MongoDB 'MatchRequest'와 'User'를 aggregation 한 후, Qdrant에 upsert
+3. 2번 결과 다 뽑으면 MongoDB 'MatchResult'에 Insert
+4. MongoDB 'court'와 'timeslots'를 agrregation한 후, Qdrant에 upsert
+
+**B. 추천 방법**
+
+1. 모든 'MatchRequest'쌍에 대해서 Description 임베딩의 유사도(cos sim)를 기반으로 추천
+	- 이 때, 단복식여부가 다르면 필터링됨.
+	- 경기목적은 'ANY'는 다 걸리고, 'FUN', 'INTENSE'는 같은거 + 상대방 ANY만 걸림
+	- 위치는 추천받는 사람 기준 maxDistance 반지름으로 원형 그려서 그 범위 밖은 필터링함.
+	- 시간은 startTime~endTime 교집합만 있으면 됨. 구체적인 시간 설정은 이후 단계에서 진행.
+2. 모든 'MatchRequst'쌍에 대해서 중간 좌표 기준으로 거리(유클리드 디스턴스)를 기반으로 테니스장 추천
+	- startTime, endTime, minTime, maxTime 연산은 여기서 일어남.
+	- 시간 픽스하고 timeslot 조회에서 열려있으면('BEFORE') 조회
+3. 이후 나와 상대의 ntrp 차이 순으로 오름차순 정렬
+
+**C. 수정/삭제**
+1. matchRequest, user, court가 삭제될 경우 Qdrant에 반영됨.
+2. 다만, 추천시에는 정보를 다 활용하므로 MongoDB는 업데이트 따로 해야함. => matchRequest-user aggregation을 쓰기 때문에 둘 중 하나는 지우고 하나는 살리면 쓰레기 데이터가 됨.
+3. 게임이 생성될 시 Qdrant 코트에서 타임슬롯이 업데이트데고 Qdrant matchRequest-user aggregation이 삭제됨.
+4. 이외의 모든 케이스는 Qdrant에서 관여하지 않음.
+
+## 무인 심판 AI
+
+![referee_ai_example](./images/referee_ai_example.png)
+
+## ToDo
+
+- [ ] 무인 심판 AI - 프론트 연동
+- [ ] Docker 환경 세팅 
+
+## References
+
+[tennis-tracking]:(https://github.com/ArtLabss/tennis-tracking)
+[TennisProject]:(https://github.com/yastrebksv/TennisProject)
+[Tennis]:(https://github.com/HaydenFaulkner/Tennis)
