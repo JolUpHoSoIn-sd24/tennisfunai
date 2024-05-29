@@ -88,19 +88,19 @@ AI, 프론트엔드, 백엔드 레포지토리를 아래 링크에서 확인하�
 
 - 기호에 맞게 pypl로 requirements.txt를 설치하거나 conda 가상환경을 생성합니다.
 
-without conda
-	```
-	pip install -r requirements.txt
-	```
+	- without conda
+		```
+		pip install -r requirements.txt
+		```
 
-with conda
-	```
-	conda env create -f environment.yaml && conda activate tp
-	```
+	- with conda
+		```
+		conda env create -f environment.yaml && conda activate tp
+		```
 
-with Docker(ToDo)
-	```
-	```
+	- with Docker(ToDo)
+		```
+		```
 
 ## 매칭 추천 AI
 
