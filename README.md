@@ -15,7 +15,8 @@
 <br/>
 	<img src="https://img.shields.io/badge/MongoDB-47A248?style=flat-square&logo=MongoDB&logoColor=white" />
 <br/>
-	<img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=Docker&logoColor=white" />
+	<img src="https://img.shields.io/badge/Anaconda-44A833?style=for-the-badge&logo=Anaconda&logoColor=white">
+ 	<img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=Docker&logoColor=white" />
  	<img src="https://img.shields.io/badge/Google%20Cloud Platform-4285F4?style=flat-square&logo=Google%20Cloud&logoColor=white" />
 
 </div>
