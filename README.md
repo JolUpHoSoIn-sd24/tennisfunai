@@ -6,7 +6,7 @@
 </div>
 <div align="center">
     <br/>
-    <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=Python&logoColor=white">
+    <img src="https://img.shields.io/badge/Python-3776AB?style=flat&logo=Python&logoColor=white">
 	
 <br/>    
     <img src="https://img.shields.io/badge/Pytorch-EE4C2C?style=flat-square&logo=Pytorch&logoColor=white" />
@@ -15,7 +15,7 @@
 <br/>
 	<img src="https://img.shields.io/badge/MongoDB-47A248?style=flat-square&logo=MongoDB&logoColor=white" />
 <br/>
-	<img src="https://img.shields.io/badge/Anaconda-44A833?style=for-the-badge&logo=Anaconda&logoColor=white">
+	<img src="https://img.shields.io/badge/Anaconda-44A833?style=flat&logo=Anaconda&logoColor=white">
  	<img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=Docker&logoColor=white" />
  	<img src="https://img.shields.io/badge/Google%20Cloud Platform-4285F4?style=flat-square&logo=Google%20Cloud&logoColor=white" />
 
