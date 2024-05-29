@@ -6,11 +6,14 @@
 </div>
 <div align="center">
     <br/>
-    <img src="https://img.shields.io/badge/Java-47A248?style=flat&logo=Conda-Forge&logoColor=white" />
-	<img src="https://img.shields.io/badge/Spring Boot-6DB33F?style=flat&logo=Spring&logoColor=white" />
-
+    <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=Python&logoColor=white">
+	
 <br/>    
-    <img src="https://img.shields.io/badge/MongoDB-47A248?style=flat-square&logo=MongoDB&logoColor=white" />
+    <img src="https://img.shields.io/badge/Pytorch-EE4C2C?style=flat-square&logo=MongoDB&logoColor=white" />
+    <img src="https://img.shields.io/badge/TensorFlow-FF6F00?style=flat-square&logo=MongoDB&logoColor=white" />
+    <img src="https://img.shields.io/badge/OpenCV-5C3EE8?style=flat-square&logo=MongoDB&logoColor=white" />
+<br/>
+	<img src="https://img.shields.io/badge/MongoDB-47A248?style=flat-square&logo=Docker&logoColor=white" />
 <br/>
 	<img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=Docker&logoColor=white" />
  	<img src="https://img.shields.io/badge/Google%20Cloud Platform-4285F4?style=flat-square&logo=Google%20Cloud&logoColor=white" />
@@ -21,11 +24,9 @@
 	<p>🛠 Tools 🛠</p>
 </div>
 <div align=center>
-	<img src="https://img.shields.io/badge/IntelliJ%20IDEA-2C2255?style=flat&logo=intellijidea&logoColor=white" />
 	<img src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=GitHub&logoColor=white" />
 <br/>
 	<img src="https://img.shields.io/badge/Visual%20Studio%20Code-007ACC?style=flat&logo=VisualStudioCode&logoColor=white" />
-	<img src="https://img.shields.io/badge/Postman-FF6C37?style=flat-square&logo=Postman&logoColor=white" />
 
 
 
