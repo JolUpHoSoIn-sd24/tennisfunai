@@ -156,6 +156,8 @@ AI, 프론트엔드, 백엔드 레포지토리를 아래 링크에서 확인하�
 
 ## 무인 심판 AI
 
+### 개요
+
 ![referee_ai_example](./images/referee_ai_example.png)
 
 ## ToDo
