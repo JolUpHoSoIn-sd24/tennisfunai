@@ -369,7 +369,7 @@ def do_match_request_and_insert_to_mongoDB(mongoDB_client, qdrant_client, senten
 
             final_startTime = target_startTime if (target_startTime > result_startTime) else result_startTime
             temp_endTime = result_endTime if (target_endTime > result_endTime) else target_endTime
-            temp_endTime += datetime.timedelta(minutes=30)
+            # temp_endTime += datetime.timedelta(minutes=30)
             final_minTime = target_minTime if (target_minTime > result_minTime) else result_minTime
             final_maxTime = result_maxTime if (target_maxTime > result_maxTime) else target_maxTime
             if (temp_endTime - final_startTime).total_seconds() / NUM_SECONDS_IN_A_MIN >= final_maxTime:
