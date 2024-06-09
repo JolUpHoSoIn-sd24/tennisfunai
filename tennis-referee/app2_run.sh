@@ -1,0 +1,1 @@
+python app_test2.py --path_ball_track_model ./models/model_best.pt --path_court_model ./models/model_tennis_court_det.pt --path_bounce_model ./models/ctb_regr_bounce.cbm

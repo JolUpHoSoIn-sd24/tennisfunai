@@ -1,0 +1,1 @@
+ffmpeg -ss 00:00:00 -i /home/kyle/data/kr_short2.mp4 -r 60 -qscale:v 2 -f image2 /home/kyle/data/kr_short2_frames/kr_short2-%d.png

@@ -1,0 +1,1 @@
+ffmpeg -fflags +igndts -ss 00:01:00 -i /home/kyle/data/test.mp4 -vf "scale=1280x720" -t 00:02:00 -correct_ts_overflow 0 -c:a copy -bsf:a aac_adtstoasc /home/kyle/data/softcon_test.mp4 
