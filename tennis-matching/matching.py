@@ -4,6 +4,7 @@ import time
 import datetime
 from tqdm import tqdm
 from bson.objectid import ObjectId
+import copy
 
 import pymongo
 from qdrant_client import QdrantClient
@@ -50,19 +51,44 @@ def get_sentence_transformer(sentence_transformer_name):
     sentence_embedding_model = SentenceTransformer(sentence_transformer_name)
     return sentence_embedding_model
 
+def get_Qdrant_match_infos_length(qdrant_client):
+    return qdrant_client.count(
+        collection_name="match_infos",
+        exact=True,
+    ).count
+
 def upsert_to_Qdrant_match_infos(mongoDB_client, qdrant_client, sentence_embedding_model, pipeline, _id = None):
     global NUM_SECONDS_IN_A_MIN
+    temp_pipeline = copy.deepcopy(pipeline)
     if _id:
-        pipeline.append({
+        temp_pipeline.append({
         "$match": {
             "_id": _id
         }
         })
 
     points = []
-    for i, post in enumerate(mongoDB_client.tennis.matchRequest.aggregate(pipeline)):
+    for i, post in enumerate(mongoDB_client.tennis.matchRequest.aggregate(temp_pipeline)):
+        # print("-----------------------------------")
+        # print(post)
+        # test = "_id"
+        # if test in post:
+        #     print(type(post[test]))
+
         if "dislikedCourts" not in post:
             post["dislikedCourts"] = []
+
+        if "maxDistance" not in post:
+            post["maxDistance"] = 4.5
+
+        if "description" not in post:
+            post["description"] = ""
+
+        if "minTime" not in post:
+            post["minTime"] = 30
+        
+        if "maxTime" not in post:
+            post["maxTime"] = 120
 
         if post["isReserved"]:
             post["maxDistance"] = 10.0
@@ -72,7 +98,8 @@ def upsert_to_Qdrant_match_infos(mongoDB_client, qdrant_client, sentence_embeddi
             post["reservationCourtId"] = ""
             post["reservationDate"] = ""
 
-        points.append(PointStruct(id = i+1, vector=sentence_embedding_model.encode(post["description"]), payload={
+        cur_id = get_Qdrant_match_infos_length(qdrant_client)
+        points.append(PointStruct(id = cur_id + 1 + i, vector=sentence_embedding_model.encode(post["description"]), payload={
             "_id": post["_id"],
             "userId": post["userId"],
             "location": {"lon": post["location"]["x"], "lat": post["location"]["y"]},
@@ -97,6 +124,7 @@ def upsert_to_Qdrant_match_infos(mongoDB_client, qdrant_client, sentence_embeddi
         points=points
     )
     print(operation_info)
+    del temp_pipeline
 
 def delete_from_Qdrant_match_infos(qdrant_client, collection, _id):
     key = ""
@@ -121,10 +149,17 @@ def delete_from_Qdrant_match_infos(qdrant_client, collection, _id):
             )
         ),
     )
+    
+def get_Qdrant_court_infos_length(qdrant_client):
+    return qdrant_client.count(
+        collection_name="court_infos",
+        exact=True,
+    ).count
 
 def upsert_to_Qdrant_court_infos(mongoDB_client, qdrant_client, pipeline, _id = None):
+    temp_pipeline = copy.deepcopy(pipeline)
     if _id:
-        pipeline.append({
+        temp_pipeline.append({
         "$match": {
             "_id": _id
         }
@@ -132,8 +167,9 @@ def upsert_to_Qdrant_court_infos(mongoDB_client, qdrant_client, pipeline, _id = 
         
     points = []
 
-    for i, post in enumerate(mongoDB_client.tennis.court.aggregate(pipeline)):
-        points.append(PointStruct(id = i+1, vector=post["location"].values(), payload={
+    for i, post in enumerate(mongoDB_client.tennis.court.aggregate(temp_pipeline)):
+        cur_id = get_Qdrant_court_infos_length(qdrant_client) + 1
+        points.append(PointStruct(id = cur_id + 1 +i, vector=post["location"].values(), payload={
             "_id": post["_id"],
             "description": post["description"],
             "courtName": post["courtName"],
@@ -148,6 +184,7 @@ def upsert_to_Qdrant_court_infos(mongoDB_client, qdrant_client, pipeline, _id = 
     )
 
     print(operation_info)
+    del temp_pipeline
 
 def delete_from_Qdrant_court_infos(qdrant_client, _id):
     qdrant_client.delete(
@@ -369,14 +406,15 @@ def court_qdrant_search(qdrant_client, cur_input, must_sample):
     return search_result
 
 def do_match_request_and_insert_to_mongoDB(mongoDB_client, qdrant_client, sentence_embedding_model, pipeline, _id = None):
+    temp_pipeline = copy.deepcopy(pipeline)
     if _id:
-        pipeline.append({
+        temp_pipeline.append({
         "$match": {
             "_id": _id
         }
         })
 
-    for item in mongoDB_client.tennis.matchRequest.aggregate(pipeline):
+    for item in mongoDB_client.tennis.matchRequest.aggregate(temp_pipeline):
         if not is_match_request_data_valid(item):
             print(f"Match request is not valid for {item['_id']}")
             continue
@@ -491,6 +529,7 @@ def do_match_request_and_insert_to_mongoDB(mongoDB_client, qdrant_client, senten
                     mongoDB_client.tennis.matchResult.insert_one(sample)
             else:
                 print(f"No proper court for {item['_id']}")
+    del temp_pipeline
 
 if __name__ == '__main__':
 
@@ -574,6 +613,16 @@ if __name__ == '__main__':
                                     print("*********************************")
                                     print("replace completed")
                                     print("*********************************")
+                            elif changed_collection == "matchRequest":
+                                changed_id = change["fullDocument"]["_id"]
+                                delete_from_Qdrant_match_infos(qdrant_client, changed_collection, changed_id)
+
+                                upsert_to_Qdrant_match_infos(mongoDB_client, qdrant_client, sentence_embedding_model, match_requests_users_pipeline, changed_id)
+
+                                do_match_request_and_insert_to_mongoDB(mongoDB_client, qdrant_client, sentence_embedding_model, match_requests_users_pipeline, changed_id)
+                                print("*********************************")
+                                print("replace matchRequest and making result completed")
+                                print("*********************************")
                             else:
                                 print(f"MongoDB collection {changed_collection} is modified, but my bed keep calling me...")
                         elif operationType == "delete":
