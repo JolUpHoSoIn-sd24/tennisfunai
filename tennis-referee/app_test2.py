@@ -35,6 +35,7 @@ relay = MediaRelay()
 path_ball_track_model =  "./models/model_best.pt"
 path_court_model = "./models/model_tennis_court_det.pt" 
 path_bounce_model = "./models/ctb_regr_bounce.cbm"
+path_sr_model = "./models/ESPCN_x2.pb"
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(device)
@@ -44,6 +45,10 @@ ball_detector = BallDetector(path_ball_track_model, device)
 court_detector = CourtDetectorNet(path_court_model, device)
 person_detector = PersonDetector(device)
 bounce_detector = BounceDetector(path_bounce_model)
+
+sr = cv2.dnn_superres.DnnSuperResImpl_create()
+sr.readModel(path_sr_model)
+sr.setModel("espcn",2)
 print("Models loaded!")
 
 x_ball, y_ball = [], []
@@ -73,90 +78,94 @@ class VideoTransformTrack(MediaStreamTrack):
         
          
         
-        try:
-            ball_track.append(ball_detector.infer_model_for_single_frame(frames[0], frame_prev, frame_preprev, ball_track))
-            homography_matrices, kps_court = court_detector.infer_model(frames)
-            persons_top, persons_bottom = person_detector.track_players(frames, homography_matrices, filter_players=False)
-            
-            x_ball.append(ball_track[-1][0])
-            y_ball.append(ball_track[-1][1])
-            bounces = bounce_detector.predict(x_ball, y_ball)
-                         
-            imgs_res = []
-            width_minimap = 166
-            height_minimap = 350
-            is_track = [x is not None for x in homography_matrices] 
-            
-            court_img = self.get_court_img()
-            
-            for i in range(len(frames)):
-                img_res = frames[i]
-                inv_mat = homography_matrices[i]
+        # try:
+        ball_track.append(ball_detector.infer_model_for_single_frame(frames[0], frame_prev, frame_preprev, ball_track))
+        # print("Ball Tracking is ended!")
+        homography_matrices, kps_court = court_detector.infer_model(frames)
+        # print("Court Detection is ended!")
+        persons_top, persons_bottom = person_detector.track_players(frames, homography_matrices, filter_players=False)
+        # print("Person Detection is ended!")
+        
+        x_ball.append(ball_track[-1][0])
+        y_ball.append(ball_track[-1][1])
+        bounces = bounce_detector.predict(x_ball, y_ball)
+        # print("Bounce Detection is ended!")
+                        
+        imgs_res = []
+        width_minimap = 166
+        height_minimap = 350
+        is_track = [x is not None for x in homography_matrices] 
+        
+        court_img = self.get_court_img()
+        
+        for i in range(len(frames)):
+            img_res = frames[i]
+            inv_mat = homography_matrices[i]
 
-                # draw ball trajectory
-                if ball_track[i][0]:
-                    if draw_trace:
-                        for j in range(0, trace):
-                            if i-j >= 0:
-                                if ball_track[i-j][0]:
-                                    draw_x = int(ball_track[i-j][0])
-                                    draw_y = int(ball_track[i-j][1])
-                                    img_res = cv2.circle(frames[i], (draw_x, draw_y),
-                                    radius=3, color=(0, 255, 0), thickness=2)
-                    else:    
-                        img_res = cv2.circle(img_res , (int(ball_track[i][0]), int(ball_track[i][1])), radius=5,
-                                                color=(0, 255, 0), thickness=2)
-                        img_res = cv2.putText(img_res, 'ball', 
-                                org=(int(ball_track[i][0]) + 8, int(ball_track[i][1]) + 8),
-                                fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                                fontScale=0.8,
-                                thickness=2,
-                                color=(0, 255, 0))
+            # draw ball trajectory
+            if ball_track[i][0]:
+                if draw_trace:
+                    for j in range(0, trace):
+                        if i-j >= 0:
+                            if ball_track[i-j][0]:
+                                draw_x = int(ball_track[i-j][0])
+                                draw_y = int(ball_track[i-j][1])
+                                img_res = cv2.circle(frames[i], (draw_x, draw_y),
+                                radius=3, color=(0, 255, 0), thickness=2)
+                else:    
+                    img_res = cv2.circle(img_res , (int(ball_track[i][0]), int(ball_track[i][1])), radius=5,
+                                            color=(0, 255, 0), thickness=2)
+                    img_res = cv2.putText(img_res, 'ball', 
+                            org=(int(ball_track[i][0]) + 8, int(ball_track[i][1]) + 8),
+                            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                            fontScale=0.8,
+                            thickness=2,
+                            color=(0, 255, 0))
 
-                # draw court keypoints
-                if kps_court[i] is not None:
-                    for j in range(len(kps_court[i])):
-                        img_res = cv2.circle(img_res, (int(kps_court[i][j][0, 0]), int(kps_court[i][j][0, 1])),
-                                            radius=0, color=(0, 0, 255), thickness=10)
-                        # print(f"i,j: {[i,j]}, coords: {[int(kps_court[i][j][0, 0]), int(kps_court[i][j][0, 1])]}")
+            # draw court keypoints
+            if kps_court[i] is not None:
+                for j in range(len(kps_court[i])):
+                    img_res = cv2.circle(img_res, (int(kps_court[i][j][0, 0]), int(kps_court[i][j][0, 1])),
+                                        radius=0, color=(0, 0, 255), thickness=10)
+                    # print(f"i,j: {[i,j]}, coords: {[int(kps_court[i][j][0, 0]), int(kps_court[i][j][0, 1])]}")
 
-                height, width, _ = img_res.shape
+            height, width, _ = img_res.shape
 
-                # draw bounce in minimap
-                if i in bounces and inv_mat is not None:
-                    ball_point = ball_track[i]
-                    ball_point = np.array(ball_point, dtype=np.float32).reshape(1, 1, 2)
-                    ball_point = cv2.perspectiveTransform(ball_point, inv_mat)
-                    court_img = cv2.circle(court_img, (int(ball_point[0, 0, 0]), int(ball_point[0, 0, 1])),
-                                                        radius=0, color=(0, 255, 255), thickness=50)
-                    print(f"bounce_coords: {[int(ball_point[0, 0, 0]), int(ball_point[0, 0, 1])]}")
+            # draw bounce in minimap
+            if i in bounces and inv_mat is not None:
+                ball_point = ball_track[i]
+                ball_point = np.array(ball_point, dtype=np.float32).reshape(1, 1, 2)
+                ball_point = cv2.perspectiveTransform(ball_point, inv_mat)
+                court_img = cv2.circle(court_img, (int(ball_point[0, 0, 0]), int(ball_point[0, 0, 1])),
+                                                    radius=0, color=(0, 255, 255), thickness=50)
+                print(f"bounce_coords: {[int(ball_point[0, 0, 0]), int(ball_point[0, 0, 1])]}")
 
-                minimap = court_img.copy()
+            minimap = court_img.copy()
 
-                # draw persons
-                persons = persons_top[i] + persons_bottom[i]                    
-                for j, person in enumerate(persons):
-                    if len(person[0]) > 0:
-                        person_bbox = list(person[0])
-                        img_res = cv2.rectangle(img_res, (int(person_bbox[0]), int(person_bbox[1])),
-                                                (int(person_bbox[2]), int(person_bbox[3])), [255, 0, 0], 2)
+            # draw persons
+            persons = persons_top[i] + persons_bottom[i]                    
+            for j, person in enumerate(persons):
+                if len(person[0]) > 0:
+                    person_bbox = list(person[0])
+                    img_res = cv2.rectangle(img_res, (int(person_bbox[0]), int(person_bbox[1])),
+                                            (int(person_bbox[2]), int(person_bbox[3])), [255, 0, 0], 2)
 
-                        # transmit person point to minimap
-                        person_point = list(person[1])
-                        person_point = np.array(person_point, dtype=np.float32).reshape(1, 1, 2)
-                        person_point = cv2.perspectiveTransform(person_point, inv_mat)
-                        minimap = cv2.circle(minimap, (int(person_point[0, 0, 0]), int(person_point[0, 0, 1])),
-                                                            radius=0, color=(255, 0, 0), thickness=80)
+                    # transmit person point to minimap
+                    person_point = list(person[1])
+                    person_point = np.array(person_point, dtype=np.float32).reshape(1, 1, 2)
+                    person_point = cv2.perspectiveTransform(person_point, inv_mat)
+                    minimap = cv2.circle(minimap, (int(person_point[0, 0, 0]), int(person_point[0, 0, 1])),
+                                                        radius=0, color=(255, 0, 0), thickness=80)
 
-                minimap = cv2.resize(minimap, (width_minimap, height_minimap))
-                img_res[30:(30 + height_minimap), (width - 30 - width_minimap):(width - 30), :] = minimap
-                imgs_res.append(img_res)
-            
-            return imgs_res 
-        except Exception as e:
-            print(f"No valid image input!")
-            print(f"Error: {e}")
-            return frames
+            minimap = cv2.resize(minimap, (width_minimap, height_minimap))
+            img_res[30:(30 + height_minimap), (width - 30 - width_minimap):(width - 30), :] = minimap
+            imgs_res.append(img_res)
+        
+        return imgs_res 
+        # except Exception as e:
+        #     print(f"No valid image input!")
+        #     print(f"Error: {e}")
+        #     return frames
 
     async def recv(self):
         frame = await self.track.recv()
@@ -164,26 +173,22 @@ class VideoTransformTrack(MediaStreamTrack):
         if self.transform == "referee":
             # rotate image
             img = frame.to_ndarray(format="bgr24")
-            # rows, cols, _ = img.shape
-            # M = cv2.getRotationMatrix2D((cols / 2, rows / 2), frame.time * 45, 1)
-            # img = cv2.warpAffine(img, M, (cols, rows))
+            
+            img = sr.upsample(img)
+            # print(f"img_shape: {img.shape}, img_type: {type(img)}")
             
             frames = [img]
             global frame_preprev, frame_prev
             
-            if frame_preprev is None:
-                frame_preprev = img
-            if frame_prev is None:
-                frame_prev = img
-            
-            img = self.inf_image(frames, draw_trace=True)
-            
+            if frame_preprev is not None and frame_prev is not None:
+                frames = self.inf_image(frames, draw_trace=True)
+                
             del frame_preprev
             frame_preprev = frame_prev
             frame_prev = img
 
             # rebuild a VideoFrame, preserving timing information
-            new_frame = VideoFrame.from_ndarray(img[0], format="bgr24")
+            new_frame = VideoFrame.from_ndarray(frames[0], format="bgr24")
             new_frame.pts = frame.pts
             new_frame.time_base = frame.time_base
             return new_frame
