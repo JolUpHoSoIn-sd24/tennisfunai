@@ -55,7 +55,7 @@ class VideoTransformTrack(MediaStreamTrack):
     kind = "video"
 
     def __init__(self, track, transform):
-        super().__init__()  # don't forget this!
+        super().__init__()
         self.track = track
         self.transform = transform
         self.index = 0
@@ -71,15 +71,17 @@ class VideoTransformTrack(MediaStreamTrack):
         global ball_detector, court_detector, person_detector, bounce_detector
         global x_ball, y_ball, frame_prev, frame_preprev, ball_track
         
-        ball_track.append(ball_detector.infer_model_for_single_frame(frames[0], frame_prev, frame_preprev, ball_track))
-        homography_matrices, kps_court = court_detector.infer_model(frames)
-        persons_top, persons_bottom = person_detector.track_players(frames, homography_matrices, filter_players=False)
+         
         
-        x_ball.append(ball_track[-1][0])
-        y_ball.append(ball_track[-1][1])
-        bounces = bounce_detector.predict(x_ball, y_ball) 
-        
-        try:             
+        try:
+            ball_track.append(ball_detector.infer_model_for_single_frame(frames[0], frame_prev, frame_preprev, ball_track))
+            homography_matrices, kps_court = court_detector.infer_model(frames)
+            persons_top, persons_bottom = person_detector.track_players(frames, homography_matrices, filter_players=False)
+            
+            x_ball.append(ball_track[-1][0])
+            y_ball.append(ball_track[-1][1])
+            bounces = bounce_detector.predict(x_ball, y_ball)
+                         
             imgs_res = []
             width_minimap = 166
             height_minimap = 350
@@ -169,9 +171,9 @@ class VideoTransformTrack(MediaStreamTrack):
             frames = [img]
             global frame_preprev, frame_prev
             
-            if not frame_preprev:
+            if frame_preprev is None:
                 frame_preprev = img
-            if not frame_prev:
+            if frame_prev is None:
                 frame_prev = img
             
             img = self.inf_image(frames, draw_trace=True)

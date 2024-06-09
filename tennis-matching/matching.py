@@ -5,6 +5,7 @@ import datetime
 from tqdm import tqdm
 from bson.objectid import ObjectId
 import copy
+from decimal128 import Decimal128
 
 import pymongo
 from qdrant_client import QdrantClient
@@ -97,6 +98,12 @@ def upsert_to_Qdrant_match_infos(mongoDB_client, qdrant_client, sentence_embeddi
         else:
             post["reservationCourtId"] = ""
             post["reservationDate"] = ""
+            
+        try:
+            post["maxDistance"] = Decimal128.to_float(post["maxDistance"])
+            print("I hate deicmal128")
+        except:
+            pass
 
         cur_id = get_Qdrant_match_infos_length(qdrant_client)
         points.append(PointStruct(id = cur_id + 1 + i, vector=sentence_embedding_model.encode(post["description"]), payload={
@@ -313,6 +320,12 @@ def match_request_qdrant_search(qdrant_client, sentence_embedding_model, cur_inp
 
     if not "maxDistance" in cur_input:
         cur_input["maxDistance"] = 10.0
+        
+    try:
+        cur_input["maxDistance"] = Decimal128.to_float(cur_input["maxDistance"])
+        print("I hate deicmal128")
+    except:
+        pass
 
     search_result = qdrant_client.search(
         collection_name="match_infos",
@@ -369,7 +382,7 @@ def match_request_qdrant_search(qdrant_client, sentence_embedding_model, cur_inp
                             lon = cur_input["location"]["x"],
                             lat = cur_input["location"]["y"],
                         ),
-                        radius = cur_input["maxDistance"] * 1000,
+                        radius = cur_input["maxDistance"] * 2000,
                     ),
                 ),
             ],
